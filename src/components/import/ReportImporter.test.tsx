@@ -53,6 +53,23 @@ describe("ReportImporter", () => {
     expect(screen.getByText(/processed locally/)).toBeInTheDocument();
   });
 
+  it("offers a prominent button to open the local file picker", async () => {
+    const user = userEvent.setup();
+    render(<ReportImporter />);
+
+    const fileInput = screen.getByLabelText(/Report file/);
+    const clickFileInput = vi.spyOn(fileInput, "click");
+
+    expect(screen.getByRole("button", { name: "Choose file" })).toBeEnabled();
+    expect(screen.getByText("JSON or ZIP, up to 50 MB")).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Choose file" }));
+
+    expect(clickFileInput).toHaveBeenCalledOnce();
+    expect(
+      screen.getByRole("button", { name: "Import report" }),
+    ).toBeDisabled();
+  });
+
   it("shows loading progress and lets the user cancel", async () => {
     const user = userEvent.setup();
     let resolveImport: (result: ReportImportResult) => void = () => {};

@@ -204,10 +204,51 @@ h1 {
   font-weight: 600;
 }
 
-.import-panel input[type="file"] {
+.visually-hidden-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+  border: 0;
+}
+
+.file-picker-button {
   display: block;
-  max-width: 100%;
-  margin-bottom: 1rem;
+  min-height: 3rem;
+  padding: 0.7rem 1.15rem;
+  border: 2px solid #20583f;
+  border-radius: 0.6rem;
+  color: #fff;
+  background: #20583f;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.file-picker-button:hover {
+  background: #174630;
+}
+
+.file-picker-button:disabled {
+  border-color: #94a49b;
+  background: #94a49b;
+  cursor: not-allowed;
+}
+
+.file-picker-button:focus-visible {
+  outline: 3px solid #276a4f;
+  outline-offset: 3px;
+}
+
+.file-picker-hint {
+  display: block;
+  margin-top: 0.5rem;
+  color: #485650;
+  font-size: 0.9rem;
 }
 
 .selected-file {

@@ -178,9 +178,7 @@ function ReportImporter() {
       </p>
 
       <form onSubmit={handleSubmit}>
-        <label htmlFor="report-file">
-          Report file (.json or .zip, up to 50 MB)
-        </label>
+        <label htmlFor="report-file">Choose a Playwright report file</label>
         <input
           ref={fileInputRef}
           id="report-file"
@@ -188,7 +186,20 @@ function ReportImporter() {
           accept=".json,.zip,application/json,application/zip"
           onChange={handleFileChange}
           disabled={isImporting || isLoadingDemo}
+          aria-label="Report file (.json or .zip, up to 50 MB)"
+          className="visually-hidden-file-input"
         />
+        <button
+          type="button"
+          className="file-picker-button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isImporting || isLoadingDemo}
+        >
+          Choose file
+        </button>
+        {!selectedFile && (
+          <span className="file-picker-hint">JSON or ZIP, up to 50 MB</span>
+        )}
         {selectedFile && (
           <p className="selected-file" role="status">
             Selected: {selectedFile.name} ({formatFileSize(selectedFile.size)})
