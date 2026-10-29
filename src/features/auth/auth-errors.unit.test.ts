@@ -7,6 +7,17 @@ function authError(code: string): AuthError {
 }
 
 describe("authentication error messages", () => {
+  it("explains that signup is restricted to approved email addresses", () => {
+    expect(
+      getAuthErrorMessage({
+        code: "hook_rejected",
+        message: "Registration is limited to approved email addresses.",
+      } as AuthError),
+    ).toBe(
+      "Registration is limited to approved email addresses. Contact the project owner if you need access.",
+    );
+  });
+
   it("uses safe, actionable messages for known auth errors", () => {
     expect(getAuthErrorMessage(authError("email_not_confirmed"))).toMatch(
       /confirm your email/i,

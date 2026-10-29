@@ -5,10 +5,9 @@ results. Local imports are processed in the browser and are not uploaded.
 Authenticated workspace members can explicitly upload report files to a
 configured Supabase project after confirming consent.
 
-The public GitHub Pages site remains a local-first synthetic demo. The
-multi-user Supabase implementation has been exercised against the local stack;
-it is not production-ready until a hosted Supabase project, email delivery,
-redirects, privacy/retention terms and deployment review are configured.
+The GitHub Pages deployment uses the production Supabase URL and publishable
+key from the Pages workflow. The linked project has the workspace schema and
+exact-email signup allowlist. The invitation email feature is postponed.
 
 ## Requirements
 
@@ -80,8 +79,12 @@ recovery and retention requirements.
 Local email confirmation and password recovery links are captured by Mailpit
 at `http://127.0.0.1:54324`. The authenticated browser flow can be exercised
 with `npm run test:e2e:auth`. The static GitHub Pages build remains in local
-report mode unless its build environment is explicitly configured with a
-Supabase URL and publishable key.
+report mode unless GitHub Actions repository variables
+`VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` are explicitly set.
+The Pages workflow uses those variables for hosted workspace builds. Hosted
+invitation creation stays disabled unless the invitation email function is
+configured and `VITE_ENABLE_WORKSPACE_INVITATIONS=true` is set. Keep all server
+credentials out of frontend variables.
 
 On Windows, if Docker Desktop is running but PowerShell says `docker` is not
 recognized, add Docker Desktop's CLI directory to the current terminal session
@@ -102,7 +105,9 @@ The app accepts Playwright JSON reports and ZIP bundles with report
 attachments. Local imports and edits stay in browser memory until a separate,
 explicit workspace upload is confirmed. When Supabase configuration is
 present, authenticated users can create and switch workspaces, manage member
-roles and invitations, and share source files in private workspace storage.
+roles, and share source files in private workspace storage. Hosted invitation
+creation remains disabled until its email delivery service is separately
+configured.
 Release metadata and checklists are versioned and saved for workspace members;
 shared test-level annotations are read-only. Evidence status, standalone HTML
 export, and print/save as PDF remain available locally. HTML exports are

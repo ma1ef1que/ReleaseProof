@@ -98,6 +98,23 @@ export const supabaseClientStatus = getSupabaseClientStatus(
   supabaseUrl,
   publishableKey,
 );
+
+export function isLocalSupabaseProject(): boolean {
+  try {
+    const hostname = new URL(supabaseUrl).hostname;
+    return hostname === "localhost" || hostname === "127.0.0.1";
+  } catch {
+    return false;
+  }
+}
+
+export function areWorkspaceInvitationsEnabled(): boolean {
+  return (
+    isLocalSupabaseProject() ||
+    import.meta.env.VITE_ENABLE_WORKSPACE_INVITATIONS === "true"
+  );
+}
+
 let clientPromise: Promise<SupabaseClient | null> | null = null;
 
 export function getSupabaseClient(): Promise<SupabaseClient | null> {

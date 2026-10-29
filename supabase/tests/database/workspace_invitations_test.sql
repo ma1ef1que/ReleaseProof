@@ -36,7 +36,6 @@ select ok(
   ),
   'anon cannot revoke invitations'
 );
-
 insert into auth.users (id, email)
 values
   ('40000000-0000-0000-0000-000000000001', 'owner@releaseproof.test'),

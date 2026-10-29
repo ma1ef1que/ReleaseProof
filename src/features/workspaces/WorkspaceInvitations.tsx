@@ -1,6 +1,10 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "../auth/auth-context";
 import {
+  areWorkspaceInvitationsEnabled,
+  isLocalSupabaseProject,
+} from "../auth/supabase";
+import {
   createWorkspaceInvitation,
   getWorkspaceErrorMessage,
   listWorkspaceInvitations,
@@ -13,13 +17,6 @@ import {
 interface WorkspaceInvitationsProps {
   workspaceId: string;
   actorRole: WorkspaceRole | undefined;
-}
-
-function isLocalDevelopment(): boolean {
-  return (
-    window.location.hostname === "localhost" ||
-    window.location.hostname === "127.0.0.1"
-  );
 }
 
 function WorkspaceInvitations({
@@ -75,7 +72,7 @@ function WorkspaceInvitations({
 
   async function handleCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!client || !isLocalDevelopment()) {
+    if (!client || !areWorkspaceInvitationsEnabled()) {
       return;
     }
 
@@ -90,12 +87,16 @@ function WorkspaceInvitations({
         email,
         role,
       );
-      const link = new URL(window.location.href);
-      link.hash = `/invite/${invitation.invitation_token}`;
-      setCreatedLink(link.toString());
+      if ("invitation_token" in invitation) {
+        const link = new URL(window.location.href);
+        link.hash = `/invite/${invitation.invitation_token}`;
+        setCreatedLink(link.toString());
+      }
       setEmail("");
       setNotice(
-        `Invitation link created. It expires ${new Date(invitation.invitation_expires_at).toLocaleString()}. Email delivery is not configured.`,
+        "invitation_token" in invitation
+          ? `Invitation link created. Email delivery is not configured. It expires ${new Date(invitation.invitation_expires_at).toLocaleString()}.`
+          : `Invitation sent. It expires ${new Date(invitation.invitation_expires_at).toLocaleString()}.`,
       );
       setInvitations(await listWorkspaceInvitations(client, workspaceId));
     } catch (cause) {
@@ -159,16 +160,16 @@ function WorkspaceInvitations({
       aria-labelledby="workspace-invitations-title"
     >
       <h3 id="workspace-invitations-title">Invitations</h3>
-      {!isLocalDevelopment() ? (
+      {!areWorkspaceInvitationsEnabled() ? (
         <p className="workspace-stage-note">
-          Invitation creation is disabled until a trusted email delivery service
-          is configured.
+          Invitation creation is temporarily disabled for this deployment.
         </p>
       ) : (
         <>
           <p className="workspace-stage-note">
-            Local development only: email is not sent. Share the one-time link
-            only with the invited email address. It expires after seven days.
+            {isLocalSupabaseProject()
+              ? "Local development only: email is not sent. Share the one-time link only with the invited email address. It expires after seven days."
+              : "An invitation email will be sent to this address. The link expires after seven days."}
           </p>
           <form
             className="workspace-invitation-form"
@@ -256,7 +257,7 @@ function WorkspaceInvitations({
                 {invitation.status === "pending" &&
                   ` · Expires ${new Date(invitation.expires_at).toLocaleDateString()}`}
               </span>
-              {invitation.status === "pending" && isLocalDevelopment() && (
+              {invitation.status === "pending" && (
                 <button
                   className="text-button workspace-remove-button"
                   type="button"

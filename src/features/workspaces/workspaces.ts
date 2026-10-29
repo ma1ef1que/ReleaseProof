@@ -1,5 +1,9 @@
 import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  areWorkspaceInvitationsEnabled,
+  isLocalSupabaseProject,
+} from "../auth/supabase";
 
 export const workspaceRoleSchema = z.enum([
   "owner",
@@ -38,6 +42,10 @@ const workspaceInvitationSchema = z.object({
 const createdInvitationSchema = z.object({
   invitation_id: z.string().uuid(),
   invitation_token: z.string().regex(/^[0-9a-f]{64}$/),
+  invitation_expires_at: z.string().datetime({ offset: true }),
+});
+const deliveredInvitationSchema = z.object({
+  invitation_id: z.string().uuid(),
   invitation_expires_at: z.string().datetime({ offset: true }),
 });
 
@@ -151,11 +159,33 @@ export async function createWorkspaceInvitation(
   workspaceId: string,
   email: string,
   role: Exclude<WorkspaceRole, "owner">,
-) {
+): Promise<
+  | z.infer<typeof createdInvitationSchema>
+  | z.infer<typeof deliveredInvitationSchema>
+> {
+  if (!areWorkspaceInvitationsEnabled()) {
+    throw new Error(
+      "Workspace invitations are not enabled for this deployment.",
+    );
+  }
+
   const normalizedEmail = email.trim().toLowerCase();
   const validation = z.string().email().safeParse(normalizedEmail);
   if (!validation.success) {
     throw new Error("Enter a valid email address.");
+  }
+
+  if (!isLocalSupabaseProject()) {
+    const { data, error } = await client.functions.invoke(
+      "send-workspace-invitation",
+      {
+        body: { workspaceId, email: normalizedEmail, role },
+      },
+    );
+    if (error) {
+      throw error;
+    }
+    return deliveredInvitationSchema.parse(data);
   }
 
   const { data, error } = await client.rpc("create_workspace_invitation", {
@@ -163,9 +193,7 @@ export async function createWorkspaceInvitation(
     p_email: normalizedEmail,
     p_role: role,
   });
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
   const [invitation] = z.array(createdInvitationSchema).length(1).parse(data);
   return invitation;
 }

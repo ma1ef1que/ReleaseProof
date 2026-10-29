@@ -1,6 +1,14 @@
 import type { AuthError } from "@supabase/supabase-js";
 
 export function getAuthErrorMessage(error: AuthError): string {
+  if (
+    error.message?.includes(
+      "Registration is limited to approved email addresses",
+    )
+  ) {
+    return "Registration is limited to approved email addresses. Contact the project owner if you need access.";
+  }
+
   switch (error.code) {
     case "email_not_confirmed":
       return "Confirm your email address before signing in.";

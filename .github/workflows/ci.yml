@@ -68,6 +68,9 @@ jobs:
       id-token: write
     env:
       VITE_BASE_PATH: /${{ github.event.repository.name }}/
+      VITE_SUPABASE_URL: https://shmlpxblbmorhhysfghu.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_2dRRjZVVGOIglwu668nF0A_E21Y9R0O
+      VITE_ENABLE_WORKSPACE_INVITATIONS: "false"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
