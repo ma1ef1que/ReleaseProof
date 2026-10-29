@@ -4,9 +4,14 @@ import type { ChecklistItem } from "../../domain/report";
 interface ChecklistEditorProps {
   items: ChecklistItem[];
   onChange: (items: ChecklistItem[]) => void;
+  readOnly?: boolean;
 }
 
-function ChecklistEditor({ items, onChange }: ChecklistEditorProps) {
+function ChecklistEditor({
+  items,
+  onChange,
+  readOnly = false,
+}: ChecklistEditorProps) {
   const [newLabel, setNewLabel] = useState("");
   const [newItemRequired, setNewItemRequired] = useState(true);
   const nextId = useRef(1);
@@ -67,6 +72,7 @@ function ChecklistEditor({ items, onChange }: ChecklistEditorProps) {
                     type="text"
                     maxLength={160}
                     value={item.label}
+                    readOnly={readOnly}
                     aria-label={`${item.label || "Checklist item"} label`}
                     aria-invalid={item.label.trim().length === 0}
                     onChange={(event) =>
@@ -80,6 +86,7 @@ function ChecklistEditor({ items, onChange }: ChecklistEditorProps) {
                   Status
                   <select
                     value={item.status}
+                    disabled={readOnly}
                     aria-label={`${item.label || "Checklist item"} status`}
                     onChange={(event) => {
                       const status = event.currentTarget.value;
@@ -101,6 +108,7 @@ function ChecklistEditor({ items, onChange }: ChecklistEditorProps) {
                   rows={2}
                   maxLength={500}
                   value={item.note ?? ""}
+                  readOnly={readOnly}
                   aria-label={`${item.label || "Checklist item"} note`}
                   onChange={(event) =>
                     updateItem(item.id, { note: event.currentTarget.value })
@@ -112,6 +120,7 @@ function ChecklistEditor({ items, onChange }: ChecklistEditorProps) {
                   <input
                     type="checkbox"
                     checked={item.required}
+                    disabled={readOnly}
                     aria-label={`${item.label || "Checklist item"} required`}
                     onChange={(event) =>
                       updateItem(item.id, {
@@ -121,18 +130,20 @@ function ChecklistEditor({ items, onChange }: ChecklistEditorProps) {
                   />
                   Required for evidence
                 </label>
-                <button
-                  className="text-button"
-                  type="button"
-                  onClick={() =>
-                    onChange(
-                      items.filter((candidate) => candidate.id !== item.id),
-                    )
-                  }
-                  aria-label={`Delete ${item.label || "unnamed checklist item"}`}
-                >
-                  Delete
-                </button>
+                {!readOnly && (
+                  <button
+                    className="text-button"
+                    type="button"
+                    onClick={() =>
+                      onChange(
+                        items.filter((candidate) => candidate.id !== item.id),
+                      )
+                    }
+                    aria-label={`Delete ${item.label || "unnamed checklist item"}`}
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
               {item.label.trim().length === 0 && (
                 <p className="field-error">Checklist item text is required.</p>
@@ -142,35 +153,37 @@ function ChecklistEditor({ items, onChange }: ChecklistEditorProps) {
         </ul>
       )}
 
-      <div className="add-checklist-item">
-        <label>
-          New checklist item
-          <input
-            type="text"
-            maxLength={160}
-            value={newLabel}
-            onChange={(event) => setNewLabel(event.currentTarget.value)}
-          />
-        </label>
-        <label className="checklist-required">
-          <input
-            type="checkbox"
-            checked={newItemRequired}
-            onChange={(event) =>
-              setNewItemRequired(event.currentTarget.checked)
-            }
-          />
-          Required for evidence
-        </label>
-        <button
-          className="secondary-button"
-          type="button"
-          disabled={!newLabel.trim()}
-          onClick={addItem}
-        >
-          Add checklist item
-        </button>
-      </div>
+      {!readOnly && (
+        <div className="add-checklist-item">
+          <label>
+            New checklist item
+            <input
+              type="text"
+              maxLength={160}
+              value={newLabel}
+              onChange={(event) => setNewLabel(event.currentTarget.value)}
+            />
+          </label>
+          <label className="checklist-required">
+            <input
+              type="checkbox"
+              checked={newItemRequired}
+              onChange={(event) =>
+                setNewItemRequired(event.currentTarget.checked)
+              }
+            />
+            Required for evidence
+          </label>
+          <button
+            className="secondary-button"
+            type="button"
+            disabled={!newLabel.trim()}
+            onClick={addItem}
+          >
+            Add checklist item
+          </button>
+        </div>
+      )}
     </section>
   );
 }

@@ -6,6 +6,10 @@ import { processImportFile } from "./import-file-processor";
 import { resolveAttachmentArchivePath } from "./zip-reader";
 import { inspectZipCentralDirectory } from "./zip-central-directory";
 import { playwrightJsonReportSchema } from "../playwright/playwright-json-schema";
+import {
+  PRIVATE_REPORT_IMPORT_LIMITS,
+  validateSharedReportFile,
+} from "../workspaces/reports";
 
 const pngSignature = new Uint8Array([
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x13, 0x49,
@@ -52,6 +56,40 @@ function captureError(operation: () => void): unknown {
 }
 
 describe("import file validation", () => {
+  it("enforces the documented private upload limits", () => {
+    expect(PRIVATE_REPORT_IMPORT_LIMITS).toMatchObject({
+      maxCompressedFileBytes: 25 * 1024 * 1024,
+      maxZipEntries: 200,
+      maxTotalUncompressedBytes: 100 * 1024 * 1024,
+      maxSingleUncompressedBytes: 50 * 1024 * 1024,
+      maxImageAttachmentBytes: 5 * 1024 * 1024,
+    });
+    expect(() =>
+      validateSharedReportFile({
+        name: "report.json",
+        size: 10 * 1024 * 1024,
+      }),
+    ).not.toThrow();
+    expect(() =>
+      validateSharedReportFile({
+        name: "report.json",
+        size: 10 * 1024 * 1024 + 1,
+      }),
+    ).toThrow("JSON reports must be 10 MB or smaller for cloud storage.");
+    expect(() =>
+      validateSharedReportFile({
+        name: "report.zip",
+        size: 25 * 1024 * 1024,
+      }),
+    ).not.toThrow();
+    expect(() =>
+      validateSharedReportFile({
+        name: "report.zip",
+        size: 25 * 1024 * 1024 + 1,
+      }),
+    ).toThrow("ZIP reports must be 25 MB or smaller for cloud storage.");
+  });
+
   it("accepts JSON and ZIP extensions without trusting the MIME type", () => {
     expect(validateImportFile({ name: "REPORT.JSON", size: 12 })).toMatchObject(
       {
@@ -157,9 +195,36 @@ describe("local report processing", () => {
       kind: "image",
       missing: false,
     });
+
     expect(result.assets).toHaveLength(1);
     expect(result.assets[0]?.attachmentId).toBe(attachment?.id);
     expect(result.assets[0]?.blob.type).toBe("image/png");
+  });
+
+  it("applies the private-upload image limit while retaining local import limits", async () => {
+    const { report, testResult } = requireFirstTestResult();
+    testResult.attachments = [
+      {
+        name: "screenshot",
+        contentType: "image/png",
+        path: "assets/screenshot.png",
+      },
+    ];
+    const bytes = await createZipBytes([
+      ["playwright-report.json", JSON.stringify(report)],
+      ["assets/screenshot.png", pngSignature],
+    ]);
+
+    await expect(
+      processImportFile(createFile(bytes), () => {}, {
+        ...PRIVATE_REPORT_IMPORT_LIMITS,
+        maxImageAttachmentBytes: 1,
+      }),
+    ).rejects.toMatchObject({
+      category: "entry_too_large",
+      message: "An image attachment exceeds the private-upload size limit.",
+    });
+    expect(DEFAULT_IMPORT_LIMITS.maxImageAttachmentBytes).toBeUndefined();
   });
 
   it("rejects an unsafe ZIP traversal entry before extracting it", async () => {

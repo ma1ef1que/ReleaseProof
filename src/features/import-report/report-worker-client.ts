@@ -1,5 +1,5 @@
 import { getImportErrorMessage, toImportFailure } from "./import-errors";
-import { validateImportFile } from "./file-validation";
+import { validateImportFile, type ImportLimits } from "./file-validation";
 import type { ImportProgress } from "./zip-reader";
 import type {
   ImportOperation,
@@ -10,8 +10,9 @@ import type {
 export function createImportOperation(
   file: File,
   onProgress: (progress: ImportProgress) => void,
+  limits?: ImportLimits,
 ): ImportOperation {
-  const validation = validateImportFile(file);
+  const validation = validateImportFile(file, limits);
   if (!validation.ok) {
     return {
       promise: Promise.resolve({ ok: false, error: validation.error }),
@@ -97,7 +98,11 @@ export function createImportOperation(
   };
 
   try {
-    worker.postMessage({ type: "parse", file });
+    worker.postMessage({
+      type: "parse",
+      file,
+      ...(limits ? { limits } : {}),
+    });
   } catch (error) {
     finish({ ok: false, error: toImportFailure(error) });
   }

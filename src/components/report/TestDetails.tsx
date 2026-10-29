@@ -12,9 +12,15 @@ interface TestDetailsProps {
   test: NormalizedTest;
   assets: ImportedReport["assets"];
   onUpdateAnnotation: (testId: string, annotation: string) => void;
+  annotationReadOnly?: boolean;
 }
 
-function TestDetails({ test, assets, onUpdateAnnotation }: TestDetailsProps) {
+function TestDetails({
+  test,
+  assets,
+  onUpdateAnnotation,
+  annotationReadOnly = false,
+}: TestDetailsProps) {
   const screenshots = test.attachments.filter(
     (attachment) => attachment.kind === "image",
   );
@@ -73,12 +79,15 @@ function TestDetails({ test, assets, onUpdateAnnotation }: TestDetailsProps) {
       )}
 
       <div className="annotation-field">
-        <label htmlFor={`annotation-${test.id}`}>QA annotation</label>
+        <label htmlFor={`annotation-${test.id}`}>
+          QA annotation{annotationReadOnly ? " (read-only)" : ""}
+        </label>
         <textarea
           id={`annotation-${test.id}`}
           value={test.userAnnotation ?? ""}
           maxLength={500}
           rows={3}
+          readOnly={annotationReadOnly}
           onChange={(event) =>
             onUpdateAnnotation(test.id, event.currentTarget.value)
           }

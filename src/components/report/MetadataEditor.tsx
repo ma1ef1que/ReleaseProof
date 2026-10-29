@@ -16,17 +16,21 @@ export type MetadataUpdate = Partial<
 interface MetadataEditorProps {
   metadata: ReportMetadata;
   onChange: (update: MetadataUpdate) => void;
+  readOnly?: boolean;
 }
 
-function MetadataEditor({ metadata, onChange }: MetadataEditorProps) {
+function MetadataEditor({
+  metadata,
+  onChange,
+  readOnly = false,
+}: MetadataEditorProps) {
   return (
     <section className="editor-section" aria-labelledby="metadata-editor-title">
       <h3 id="metadata-editor-title" className="section-title">
         Release metadata
       </h3>
       <p className="editor-description">
-        These notes stay in this browser session and do not change the imported
-        test results.
+        These notes do not change the imported test results.
       </p>
       <div className="metadata-editor-grid">
         <label>
@@ -35,6 +39,7 @@ function MetadataEditor({ metadata, onChange }: MetadataEditorProps) {
             type="text"
             maxLength={200}
             value={metadata.runTitle}
+            readOnly={readOnly}
             onChange={(event) =>
               onChange({ runTitle: event.currentTarget.value })
             }
@@ -46,6 +51,7 @@ function MetadataEditor({ metadata, onChange }: MetadataEditorProps) {
             type="text"
             maxLength={120}
             value={metadata.environment ?? ""}
+            readOnly={readOnly}
             onChange={(event) =>
               onChange({ environment: event.currentTarget.value })
             }
@@ -57,6 +63,7 @@ function MetadataEditor({ metadata, onChange }: MetadataEditorProps) {
             type="text"
             maxLength={120}
             value={metadata.buildVersion ?? ""}
+            readOnly={readOnly}
             onChange={(event) =>
               onChange({ buildVersion: event.currentTarget.value })
             }
@@ -68,6 +75,7 @@ function MetadataEditor({ metadata, onChange }: MetadataEditorProps) {
             type="text"
             maxLength={80}
             value={metadata.commitSha ?? ""}
+            readOnly={readOnly}
             onChange={(event) =>
               onChange({ commitSha: event.currentTarget.value })
             }
@@ -78,6 +86,7 @@ function MetadataEditor({ metadata, onChange }: MetadataEditorProps) {
           <input
             type="datetime-local"
             value={toLocalDateTime(metadata.runDate)}
+            readOnly={readOnly}
             onChange={(event) =>
               onChange({
                 runDate: event.currentTarget.value
@@ -93,6 +102,7 @@ function MetadataEditor({ metadata, onChange }: MetadataEditorProps) {
             rows={4}
             maxLength={2000}
             value={metadata.notes ?? ""}
+            readOnly={readOnly}
             onChange={(event) => onChange({ notes: event.currentTarget.value })}
             placeholder="Add context for this test run"
           />
@@ -102,6 +112,7 @@ function MetadataEditor({ metadata, onChange }: MetadataEditorProps) {
         <input
           type="checkbox"
           checked={metadata.userReportedBlocker ?? false}
+          disabled={readOnly}
           onChange={(event) =>
             onChange({ userReportedBlocker: event.currentTarget.checked })
           }

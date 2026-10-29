@@ -7,6 +7,7 @@ export interface ImportLimits {
   maxZipEntries: number;
   maxTotalUncompressedBytes: number;
   maxSingleUncompressedBytes: number;
+  maxImageAttachmentBytes?: number;
 }
 
 export const DEFAULT_IMPORT_LIMITS: Readonly<ImportLimits> = {

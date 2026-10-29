@@ -3,6 +3,7 @@
 - `ADR-001`: Keep the MVP client-side and statically hosted to meet the €0/month
   target.
 - `ADR-002`: Do not add accounts or cloud storage before demand validation.
+  Superseded for accounts by ADR-015; cloud report storage remains deferred.
 - `ADR-003`: Use deterministic analysis; do not require a generative AI service.
 - `ADR-004`: Use Playwright JSON as the canonical input format; ZIP is a wrapper
   for report attachments.
@@ -27,4 +28,18 @@
 - `ADR-013`: Generate demo results and screenshots from synthetic data in the
   browser rather than bundling customer, employer, or production artifacts.
 - `ADR-014`: Use GitHub Pages for static hosting; deploy only from `main` after
-  the CI quality job passes.
+  the CI quality and database jobs pass.
+- `ADR-015`: Implement the approved Supabase migration one stage at a time.
+  Keep the public GitHub Pages build local-first and unauthenticated until a
+  hosted project, redirect allowlist, email delivery and release review are
+  explicitly configured. Authentication uses only the browser publishable
+  key. Local Stages 1–6 now cover database isolation, authentication,
+  workspaces, roles, invitations, private report storage and versioned
+  collaboration. Hosted auth and report uploads remain disabled until a
+  production Supabase project and operational policies are reviewed.
+- `ADR-016`: Keep local imports local by default. Uploads to a workspace require
+  a separate user confirmation and store the source in a private bucket;
+  PostgreSQL stores only report metadata and checklist state. Use stricter
+  cloud ZIP limits, report-path-bound Storage policies, role-checked RPCs and
+  optimistic report versions. Annotation edits remain read-only in shared
+  reports until collaborative persistence is implemented.

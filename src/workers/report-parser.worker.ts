@@ -10,9 +10,13 @@ workerScope.onmessage = (event: MessageEvent<ParserWorkerRequest>) => {
     return;
   }
 
-  void processImportFile(request.file, (progress) => {
-    workerScope.postMessage({ type: "progress", progress });
-  }).then(
+  void processImportFile(
+    request.file,
+    (progress) => {
+      workerScope.postMessage({ type: "progress", progress });
+    },
+    request.limits,
+  ).then(
     ({ report, assets }) => {
       workerScope.postMessage({ type: "success", report, assets });
     },

@@ -2,7 +2,7 @@ import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  testMatch: "**/*.spec.ts",
+  testMatch: "import-flow.spec.ts",
   fullyParallel: false,
   workers: 1,
   reporter: "list",

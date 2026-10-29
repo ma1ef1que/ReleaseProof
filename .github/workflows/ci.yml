@@ -10,6 +10,17 @@ permissions:
   contents: read
 
 jobs:
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan tracked files for secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   quality:
     runs-on: ubuntu-latest
     steps:
@@ -28,9 +39,28 @@ jobs:
       - run: npm run test:e2e
       - run: npm run build
 
+  database-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run db:start
+      - run: npm run db:configure
+      - run: npx supabase db lint --local --schema public,private --fail-on error
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:db
+      - run: npm run test:e2e:auth
+      - name: Stop local Supabase
+        if: always()
+        run: npm run db:stop -- --no-backup
+
   pages-build:
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-    needs: quality
+    needs: [quality, database-tests, secret-scan]
     runs-on: ubuntu-latest
     permissions:
       contents: read

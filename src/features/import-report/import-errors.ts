@@ -24,10 +24,9 @@ const defaultMessages: Record<ImportErrorCategory, string> = {
   empty_file: "The selected file is empty.",
   invalid_archive: "The ZIP archive is invalid or could not be read.",
   unsafe_archive_path: "The ZIP contains an unsafe path and was rejected.",
-  too_many_entries: "The ZIP contains more entries than the 5,000-entry limit.",
-  archive_too_large:
-    "The ZIP expands beyond the 200 MB uncompressed-size limit.",
-  entry_too_large: "A ZIP entry exceeds the 50 MB uncompressed-size limit.",
+  too_many_entries: "The ZIP contains more entries than the configured limit.",
+  archive_too_large: "The ZIP expands beyond the configured size limit.",
+  entry_too_large: "A ZIP entry exceeds its configured size limit.",
   report_not_found: "The ZIP does not contain a Playwright JSON report.",
   ambiguous_report:
     "The ZIP contains multiple possible JSON reports; include only one report or name it playwright-report.json.",

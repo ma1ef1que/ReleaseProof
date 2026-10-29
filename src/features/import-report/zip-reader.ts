@@ -288,6 +288,16 @@ async function resolveAttachments(
       if (blob.size > limits.maxSingleUncompressedBytes) {
         throw new ImportPipelineError("entry_too_large");
       }
+      if (
+        attachment.kind === "image" &&
+        limits.maxImageAttachmentBytes !== undefined &&
+        blob.size > limits.maxImageAttachmentBytes
+      ) {
+        throw new ImportPipelineError(
+          "entry_too_large",
+          "An image attachment exceeds the private-upload size limit.",
+        );
+      }
       if (actualUncompressedBytes > limits.maxTotalUncompressedBytes) {
         throw new ImportPipelineError("archive_too_large");
       }

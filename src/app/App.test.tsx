@@ -15,7 +15,7 @@ describe("application shell", () => {
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/application does not upload it/i),
+      screen.getByText(/Local imports stay in this browser/i),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "How it works" })).toHaveAttribute(
       "href",
@@ -31,10 +31,15 @@ describe("application shell", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Privacy" }));
     expect(
-      screen.getByRole("dialog", { name: "Your report stays in this browser" }),
+      screen.getByRole("dialog", {
+        name: "Your report stays local unless you choose to upload it",
+      }),
     ).toBeInTheDocument();
+    expect(screen.getByText(/ordinary request metadata/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/may receive ordinary web request metadata/i),
+      screen.getByText(
+        /workspace names, descriptions, member identities and roles are stored/i,
+      ),
     ).toBeInTheDocument();
     expect(
       screen.getByText(/not a guarantee of release safety/i),

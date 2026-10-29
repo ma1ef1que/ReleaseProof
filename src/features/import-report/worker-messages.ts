@@ -1,10 +1,12 @@
 import type { NormalizedReport } from "../../domain/report";
 import type { ImportFailure } from "./import-errors";
+import type { ImportLimits } from "./file-validation";
 import type { ImportProgress, ImportedAsset } from "./zip-reader";
 
 export type ParserWorkerRequest = {
   type: "parse";
   file: File;
+  limits?: ImportLimits;
 };
 
 export type ParserWorkerResponse =

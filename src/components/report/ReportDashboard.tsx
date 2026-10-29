@@ -30,6 +30,9 @@ interface ReportDashboardProps {
   onUpdateAnnotation: (testId: string, annotation: string) => void;
   onUpdateChecklist: (items: ChecklistItem[]) => void;
   onUpdateMetadata: (update: MetadataUpdate) => void;
+  readOnly?: boolean;
+  annotationReadOnly?: boolean;
+  clearLabel?: string;
 }
 
 const STATUS_ORDER: Record<TestStatus, number> = {
@@ -49,6 +52,9 @@ function ReportDashboard({
   onUpdateAnnotation,
   onUpdateChecklist,
   onUpdateMetadata,
+  readOnly = false,
+  annotationReadOnly = false,
+  clearLabel = "Clear report",
 }: ReportDashboardProps) {
   const { report, assets } = imported;
   const [query, setQuery] = useState("");
@@ -144,7 +150,7 @@ function ReportDashboard({
             Preview export
           </button>
           <button className="secondary-button" type="button" onClick={onClear}>
-            Clear report
+            {clearLabel}
           </button>
         </div>
       </header>
@@ -218,12 +224,20 @@ function ReportDashboard({
         </dl>
       </section>
 
-      <MetadataEditor metadata={metadata} onChange={onUpdateMetadata} />
+      <MetadataEditor
+        metadata={metadata}
+        onChange={onUpdateMetadata}
+        readOnly={readOnly}
+      />
       <EvidenceSummary
         status={report.evidence.status}
         reasons={report.evidence.reasons}
       />
-      <ChecklistEditor items={report.checklist} onChange={onUpdateChecklist} />
+      <ChecklistEditor
+        items={report.checklist}
+        onChange={onUpdateChecklist}
+        readOnly={readOnly}
+      />
 
       <section className="test-results" aria-labelledby="test-results-title">
         <div className="test-results-header">
@@ -328,6 +342,7 @@ function ReportDashboard({
                 test={selectedTest}
                 assets={assets}
                 onUpdateAnnotation={onUpdateAnnotation}
+                annotationReadOnly={annotationReadOnly}
               />
             )}
           </div>

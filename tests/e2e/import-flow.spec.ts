@@ -274,7 +274,9 @@ test("loads clearly labeled synthetic demo data and supports keyboard navigation
   const privacyButton = page.getByRole("button", { name: "Privacy" });
   await privacyButton.click();
   await expect(
-    page.getByRole("dialog", { name: "Your report stays in this browser" }),
+    page.getByRole("dialog", {
+      name: "Your report stays local unless you choose to upload it",
+    }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Close privacy information" }),

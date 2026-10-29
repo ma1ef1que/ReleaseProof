@@ -12,9 +12,12 @@ them to think aloud and note where they hesitate.
   screenshots are synthetic.
 - Do not request real Playwright reports, credentials, personal data or
   confidential screenshots.
-- Explain that report content stays in the browser, but the static hosting
-  provider can receive ordinary web request metadata such as an IP address and
-  browser details.
+- Explain that local report content stays in the browser, but the static
+  hosting provider can receive ordinary web request metadata such as an IP
+  address and browser details.
+- If testing the authenticated workspace flow against local Supabase, use only
+  synthetic reports. A workspace upload is explicit, but the file and any
+  bundled attachments are stored in that Supabase project until deleted.
 
 ## Tasks
 

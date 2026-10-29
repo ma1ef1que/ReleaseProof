@@ -34,3 +34,9 @@ files; importing the JSON alone leaves those attachments missing. ZIP imports
 reject unsafe archive paths and enforce limits on archive size, entry count,
 and extracted data. Only supported image files with matching content
 signatures are imported as image attachments.
+
+Local-only imports allow JSON and ZIP files up to 50 MiB, with up to 5,000 ZIP
+entries and 200 MiB of expanded data. Explicit workspace uploads apply stricter
+limits: JSON up to 10 MiB; ZIP up to 25 MiB, 200 entries and 100 MiB expanded
+data; each image attachment is limited to 5 MiB. The source file remains in
+private workspace Storage so authorized members can reload or download it.
