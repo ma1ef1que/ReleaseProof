@@ -1,0 +1,5 @@
+node_modules
+dist
+coverage
+package-lock.json
+ReleaseProof_MVP_Product_and_Technical_Specification.md

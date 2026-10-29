@@ -1,0 +1,43 @@
+{
+  "config": {
+    "version": "1.64.1"
+  },
+  "suites": [
+    {
+      "title": "checkout.spec.ts",
+      "file": "checkout.spec.ts",
+      "specs": [
+        {
+          "title": "accepts a future result",
+          "file": "checkout.spec.ts",
+          "line": 8,
+          "column": 1,
+          "tests": [
+            {
+              "projectName": "chromium",
+              "expectedStatus": "passed",
+              "results": [
+                {
+                  "retry": 0,
+                  "status": "futureStatus",
+                  "duration": 12,
+                  "errors": [],
+                  "attachments": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-29T00:00:00.000Z",
+    "duration": 12,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}
