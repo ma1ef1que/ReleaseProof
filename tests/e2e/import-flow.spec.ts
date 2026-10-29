@@ -17,17 +17,17 @@ async function loadReport() {
 test("imports a JSON report in the browser without sending its contents", async ({
   page,
 }) => {
-  const browserErrors: string[] = [];
+  const browserDiagnostics: string[] = [];
   page.on("pageerror", (error) =>
-    browserErrors.push(error.stack ?? error.message),
+    browserDiagnostics.push(error.stack ?? error.message),
   );
   page.on("framenavigated", (frame) => {
     if (frame === page.mainFrame()) {
-      browserErrors.push(`Main frame navigated to ${frame.url()}`);
+      browserDiagnostics.push(`Main frame navigated to ${frame.url()}`);
     }
   });
   page.on("requestfailed", (request) => {
-    browserErrors.push(
+    browserDiagnostics.push(
       `Request failed: ${request.url()} (${request.failure()?.errorText ?? "unknown"})`,
     );
   });
@@ -36,7 +36,7 @@ test("imports a JSON report in the browser without sending its contents", async 
       message.type() === "error" ||
       message.text().startsWith("FORM_SUBMIT")
     ) {
-      browserErrors.push(message.text());
+      browserDiagnostics.push(message.text());
     }
   });
   const report = await loadReport();
@@ -83,7 +83,7 @@ test("imports a JSON report in the browser without sending its contents", async 
       };
     });
     throw new Error(
-      `Report import did not complete. URL: ${page.url()}\nFile input: ${JSON.stringify(fileState)}\nImport button disabled: ${await page.getByRole("button", { name: "Import report" }).isDisabled()}\nUI: ${await page.locator("body").innerText()}\nBrowser diagnostics: ${browserErrors.join("\n") || "none"}`,
+      `Report import did not complete. URL: ${page.url()}\nFile input: ${JSON.stringify(fileState)}\nImport button disabled: ${await page.getByRole("button", { name: "Import report" }).isDisabled()}\nUI: ${await page.locator("body").innerText()}\nBrowser diagnostics: ${browserDiagnostics.join("\n") || "none"}`,
     );
   }
   await expect(page.getByText("4 logical tests and 5 attempts")).toBeVisible();
@@ -349,9 +349,32 @@ test("exports an imported ZIP report as standalone HTML with embedded images", a
   await page.keyboard.press("Tab");
   await expect(previewFrame).toBeFocused();
   await page.keyboard.press("Tab");
-  await expect(
-    page.getByRole("button", { name: "Print / Save as PDF" }),
-  ).toBeFocused();
+  const printButton = page.getByRole("button", {
+    name: "Print / Save as PDF",
+  });
+  const focusState = await page.evaluate(() => {
+    const frame = document.querySelector<HTMLIFrameElement>(
+      'iframe[title="Standalone HTML report preview"]',
+    );
+    const describe = (element: Element | null | undefined) => {
+      if (!element) {
+        return null;
+      }
+      return {
+        tag: element.tagName,
+        id: element.id,
+        text: element.textContent?.trim().slice(0, 100),
+      };
+    };
+    return {
+      parent: describe(document.activeElement),
+      frame: describe(frame?.contentDocument?.activeElement),
+    };
+  });
+  expect(
+    await printButton.evaluate((element) => document.activeElement === element),
+    JSON.stringify(focusState),
+  ).toBe(true);
   await page.keyboard.press("Tab");
   await expect(
     page.getByRole("button", { name: "Download HTML" }),

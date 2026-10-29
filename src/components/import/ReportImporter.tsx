@@ -33,6 +33,10 @@ function ReportImporter() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    await importSelectedFile();
+  }
+
+  async function importSelectedFile() {
     if (!selectedFile) {
       return;
     }
@@ -194,6 +198,10 @@ function ReportImporter() {
           <button
             type="submit"
             disabled={!selectedFile || isImporting || isLoadingDemo}
+            onClick={(event) => {
+              event.preventDefault();
+              void importSelectedFile();
+            }}
           >
             Import report
           </button>
