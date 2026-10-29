@@ -32,7 +32,10 @@ test("imports a JSON report in the browser without sending its contents", async 
     );
   });
   page.on("console", (message) => {
-    if (message.type() === "error") {
+    if (
+      message.type() === "error" ||
+      message.text().startsWith("FORM_SUBMIT")
+    ) {
       browserErrors.push(message.text());
     }
   });
@@ -50,6 +53,11 @@ test("imports a JSON report in the browser without sending its contents", async 
 
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/");
+  await page.evaluate(() => {
+    document.addEventListener("submit", (event) => {
+      console.log(`FORM_SUBMIT defaultPrevented=${event.defaultPrevented}`);
+    });
+  });
   await page.getByLabel(/Report file/).setInputFiles({
     name: "playwright.json",
     mimeType: "application/json",
