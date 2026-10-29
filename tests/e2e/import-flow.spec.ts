@@ -292,6 +292,50 @@ test("loads clearly labeled synthetic demo data and supports keyboard navigation
   await expect(privacyButton).toBeFocused();
 });
 
+test("uses consistent typography and dimensions for action buttons", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Try demo report" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Report ready" }),
+  ).toBeVisible();
+
+  const buttonStyles = await page
+    .locator("button:not(.test-list-item)")
+    .evaluateAll((buttons) =>
+      buttons.map((button) => {
+        const style = getComputedStyle(button);
+        return {
+          minHeight: style.minHeight,
+          padding: style.padding,
+          borderRadius: style.borderRadius,
+          fontFamily: style.fontFamily,
+          fontSize: style.fontSize,
+          fontWeight: style.fontWeight,
+          lineHeight: style.lineHeight,
+        };
+      }),
+    );
+
+  expect(buttonStyles.length).toBeGreaterThan(5);
+  for (const property of [
+    "minHeight",
+    "padding",
+    "borderRadius",
+    "fontFamily",
+    "fontSize",
+    "fontWeight",
+    "lineHeight",
+  ] as const) {
+    expect(
+      [...new Set(buttonStyles.map((style) => style[property]))],
+      `Action button ${property} should be consistent`,
+    ).toHaveLength(1);
+  }
+  expect(buttonStyles[0]?.minHeight).toBe("44px");
+});
+
 test("exports an imported ZIP report as standalone HTML with embedded images", async ({
   page,
 }, testInfo) => {

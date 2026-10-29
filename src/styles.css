@@ -19,6 +19,16 @@
   box-sizing: border-box;
 }
 
+button {
+  min-height: 2.75rem;
+  padding: 0.65rem 1rem;
+  border-radius: 0.5rem;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
 body {
   min-width: 320px;
   min-height: 100vh;
@@ -72,11 +82,7 @@ body {
 
 .site-header .text-button {
   border: 0;
-  padding: 0.4rem 0.2rem;
   color: #20583f;
-  font: inherit;
-  font-size: 0.9rem;
-  font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 0.2rem;
 }
@@ -218,14 +224,9 @@ h1 {
 
 .file-picker-button {
   display: block;
-  min-height: 3rem;
-  padding: 0.7rem 1.15rem;
   border: 2px solid #20583f;
-  border-radius: 0.6rem;
   color: #fff;
   background: #20583f;
-  font: inherit;
-  font-weight: 700;
   cursor: pointer;
 }
 
@@ -265,14 +266,9 @@ h1 {
 }
 
 .import-actions button {
-  min-height: 2.75rem;
-  padding: 0.65rem 1rem;
   border: 0;
-  border-radius: 0.5rem;
   color: #fff;
   background: #276a4f;
-  font: inherit;
-  font-weight: 600;
   cursor: pointer;
 }
 
@@ -375,14 +371,9 @@ h1 {
 }
 
 .secondary-button {
-  min-height: 2.75rem;
-  padding: 0.65rem 1rem;
   border: 1px solid #276a4f;
-  border-radius: 0.5rem;
   color: #20583f;
   background: #fff;
-  font: inherit;
-  font-weight: 600;
   cursor: pointer;
 }
 
@@ -391,14 +382,9 @@ h1 {
 }
 
 .primary-button {
-  min-height: 2.75rem;
-  padding: 0.65rem 1rem;
   border: 1px solid #276a4f;
-  border-radius: 0.5rem;
   color: #fff;
   background: #276a4f;
-  font: inherit;
-  font-weight: 600;
   cursor: pointer;
 }
 
@@ -566,6 +552,7 @@ h1 {
 
 .test-list-item {
   width: 100%;
+  min-height: 0;
   padding: 0.85rem;
   border: 1px solid #dce5df;
   border-radius: 0.65rem;
@@ -913,14 +900,9 @@ h1 {
 }
 
 .text-button {
-  min-height: 2.25rem;
-  padding: 0.4rem 0.65rem;
   border: 1px solid #b9c7bd;
-  border-radius: 0.4rem;
   background: #fff;
   color: #34413a;
-  font: inherit;
-  font-size: 0.8rem;
   cursor: pointer;
 }
 
