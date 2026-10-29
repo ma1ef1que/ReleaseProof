@@ -207,7 +207,7 @@ function AuthPage({ route, navigate }: AuthPageProps) {
       <h1 id="auth-title">{title}</h1>
       <p className="auth-description">
         Your Playwright reports remain in this browser unless you explicitly
-        choose a future cloud upload.
+        upload one to a workspace.
       </p>
       {sessionError && (
         <p className="auth-alert" role="alert">

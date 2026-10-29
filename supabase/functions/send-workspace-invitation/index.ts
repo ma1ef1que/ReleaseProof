@@ -20,20 +20,6 @@ function safeEqual(left: string, right: string): boolean {
   return left.length === right.length && left === right;
 }
 
-function escapeHtml(value: string): string {
-  return value.replace(
-    /[&<>"']/g,
-    (character) =>
-      ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;",
-      })[character]!,
-  );
-}
-
 function hex(bytes: Uint8Array): string {
   return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join(
     "",
@@ -62,16 +48,12 @@ Deno.serve(async (request) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  const resendApiKey = Deno.env.get("RESEND_API_KEY");
-  const from = Deno.env.get("INVITATION_FROM");
   const siteUrl = Deno.env.get("INVITATION_SITE_URL");
   if (
     !authorization ||
     !supabaseUrl ||
     !anonKey ||
     !serviceRoleKey ||
-    !resendApiKey ||
-    !from ||
     !siteUrl
   ) {
     return json(503, { error: "Invitation delivery is not configured" });
@@ -150,27 +132,24 @@ Deno.serve(async (request) => {
         p_invitation_id: invitation.invitation_id,
       });
 
-    const acceptanceUrl = new URL("#/invite/" + token, siteUrl).toString();
-    const escapedUrl = escapeHtml(acceptanceUrl);
-    const escapedEmail = escapeHtml(email);
-    const sendResponse = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${resendApiKey}`,
-        "Content-Type": "application/json",
-        "Idempotency-Key": invitation.invitation_id,
-      },
-      body: JSON.stringify({
-        from,
-        to: [email],
-        subject: "You have been invited to a ReleaseProof workspace",
-        text: `You were invited to join a ReleaseProof workspace as ${payload.role}. Sign in with ${email} and accept the invitation here: ${acceptanceUrl}\n\nThis link expires in seven days. If you did not expect this invitation, ignore this email.`,
-        html: `<p>You were invited to join a ReleaseProof workspace as <strong>${payload.role}</strong>.</p><p><a href="${escapedUrl}">Review and accept the invitation</a></p><p>This invitation was addressed to ${escapedEmail} and expires in seven days. If you did not expect it, ignore this email.</p>`,
-      }),
-      signal: AbortSignal.timeout(10_000),
+    const acceptanceUrl = new URL(siteUrl);
+    acceptanceUrl.searchParams.set("invite", token);
+
+    // Supabase Auth sends this magic link through the project's configured
+    // SMTP provider. The email link first signs in the invitee, then returns
+    // them to the invitation route with its one-time token.
+    const emailClient = createClient(supabaseUrl, anonKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
     });
-    if (!sendResponse.ok) {
-      // The secret token was not delivered; revoke the unusable pending record.
+    const { error: emailError } = await emailClient.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: acceptanceUrl.toString(),
+        shouldCreateUser: true,
+      },
+    });
+    if (emailError) {
+      // The invitation link was not accepted by Supabase Auth.
       await userClient.rpc("revoke_workspace_invitation", {
         p_invitation_id: invitation.invitation_id,
       });

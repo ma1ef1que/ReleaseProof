@@ -35,6 +35,12 @@ function getRouteFromHash(): AppRoute {
   if (invitationRoute) {
     return `invite/${invitationRoute[1]}`;
   }
+  const emailInvitation = new URLSearchParams(window.location.search).get(
+    "invite",
+  );
+  if (emailInvitation && /^[0-9a-f]{64}$/i.test(emailInvitation)) {
+    return `invite/${emailInvitation}`;
+  }
   return "home";
 }
 

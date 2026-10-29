@@ -2,11 +2,12 @@
 
 ## Current boundary
 
-The public GitHub Pages build remains local-first until its Supabase build
-variables are set. The linked hosted project has the workspace schema and an
-enabled exact-email Auth hook, but new signups remain disabled pending custom
-SMTP configuration and hosted end-to-end review. Local RLS and Storage tests
-do not replace staging validation or independent review for confidential data.
+The public GitHub Pages build uses the linked Supabase project for authenticated
+workspaces. An exact-email Auth hook restricts new account creation to the two
+approved test addresses. Workspace invitations send Supabase Auth email links;
+the default SMTP service only sends to project organization members and allows
+two emails per hour. Local RLS and Storage tests do not replace staging
+validation or independent review for confidential data.
 
 The browser uses only the Supabase publishable key. Never expose a database
 password, service-role key, access token or other server credential through a

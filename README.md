@@ -7,7 +7,8 @@ configured Supabase project after confirming consent.
 
 The GitHub Pages deployment uses the production Supabase URL and publishable
 key from the Pages workflow. The linked project has the workspace schema and
-exact-email signup allowlist. The invitation email feature is postponed.
+exact-email signup allowlist. Workspace invitations use Supabase Auth email
+links and are enabled for the two allowlisted test accounts.
 
 ## Requirements
 
@@ -78,13 +79,12 @@ recovery and retention requirements.
 
 Local email confirmation and password recovery links are captured by Mailpit
 at `http://127.0.0.1:54324`. The authenticated browser flow can be exercised
-with `npm run test:e2e:auth`. The static GitHub Pages build remains in local
-report mode unless GitHub Actions repository variables
-`VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` are explicitly set.
-The Pages workflow uses those variables for hosted workspace builds. Hosted
-invitation creation stays disabled unless the invitation email function is
-configured and `VITE_ENABLE_WORKSPACE_INVITATIONS=true` is set. Keep all server
-credentials out of frontend variables.
+with `npm run test:e2e:auth`. The Pages workflow configures the hosted workspace
+build and invitations. Workspace invitations use Supabase Auth email links and
+require the deployed invitation function and migration. The default SMTP is
+limited to project team
+addresses and two messages per hour. Keep all server credentials out of
+frontend variables.
 
 On Windows, if Docker Desktop is running but PowerShell says `docker` is not
 recognized, add Docker Desktop's CLI directory to the current terminal session
@@ -105,9 +105,8 @@ The app accepts Playwright JSON reports and ZIP bundles with report
 attachments. Local imports and edits stay in browser memory until a separate,
 explicit workspace upload is confirmed. When Supabase configuration is
 present, authenticated users can create and switch workspaces, manage member
-roles, and share source files in private workspace storage. Hosted invitation
-creation remains disabled until its email delivery service is separately
-configured.
+roles, share source files in private workspace storage, and invite allowlisted
+members by email.
 Release metadata and checklists are versioned and saved for workspace members;
 shared test-level annotations are read-only. Evidence status, standalone HTML
 export, and print/save as PDF remain available locally. HTML exports are

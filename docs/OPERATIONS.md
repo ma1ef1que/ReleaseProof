@@ -94,38 +94,32 @@ operations.
 
 ### Hosted invitation delivery
 
-This feature is postponed. Its migration is stored outside the active
-`supabase/migrations` directory, so the production migration push for the
-signup allowlist will not enable hosted invitation creation. Keep
-`VITE_ENABLE_WORKSPACE_INVITATIONS` unset or `false` until email delivery is
-configured and the optional migration is reviewed and moved into the active
-migration sequence.
+The `send-workspace-invitation` Edge Function creates a one-time workspace
+invitation and asks Supabase Auth to email a sign-in link to the invited
+address. The link signs in or registers the invited user, then returns to the
+workspace invitation. The signup allowlist still controls which new accounts
+can be created. Supabase's default SMTP only sends to members of the project
+organization and is limited to two emails per hour; use it only for small
+tests with those recipients.
 
-The `send-workspace-invitation` Edge Function sends invitation email through
-Resend. Deploy it after the database migration and configure these Supabase
-Function secrets in the target project (never in Vite variables):
+Deploy the active invitation migration before the function, then configure the
+two public URL settings as Supabase Function secrets (never as Vite variables):
 
 ```sh
+npx supabase db push --linked
 npx supabase functions deploy send-workspace-invitation
 npx supabase secrets set --project-ref <project-ref> \
-  RESEND_API_KEY=<resend-api-key> \
-  INVITATION_FROM='ReleaseProof <no-reply@example.com>' \
-  INVITATION_SITE_URL='https://example.com/' \
-  INVITATION_ALLOWED_ORIGIN='https://example.com'
+  INVITATION_SITE_URL='https://ma1ef1que.github.io/ReleaseProof/' \
+  INVITATION_ALLOWED_ORIGIN='https://ma1ef1que.github.io'
 ```
 
-Use a verified sender domain with the email provider. Set the site URL to the
-deployed application root, including any repository subpath, and allow only
-that exact HTTPS origin. Configure the same URL in Supabase Auth's site URL and
-redirect allowlist. The function validates the signed-in user and the database
-checks invitation role, workspace membership, duplicate invitations and the
-per-user rate limit. The raw token exists only in the function and delivered
-email; Postgres stores its SHA-256 hash. If delivery fails, the function
-revokes the pending invitation. Verify email delivery, expiry, wrong-email
-rejection and revocation in staging before enabling production invitations.
-Keep the GitHub Actions variable `VITE_ENABLE_WORKSPACE_INVITATIONS` unset or
-set it to `false` while invitation delivery is postponed. Set it to `true`
-only after deploying the function and verifying the email flow in staging.
+Configure the application root as Supabase Auth's site URL and allow redirects
+under `https://ma1ef1que.github.io/ReleaseProof/**`. The function validates the
+signed-in inviter. The database checks workspace role, duplicate invitations
+and the per-user rate limit. Postgres stores only a SHA-256 hash of the
+invitation token. If Auth rejects the email request, the pending invitation is
+revoked. The Pages workflow enables the invitation UI after these Supabase
+steps are applied.
 
 ## Retention and deletion
 
