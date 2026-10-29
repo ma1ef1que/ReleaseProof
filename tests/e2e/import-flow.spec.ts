@@ -21,6 +21,13 @@ test("imports a JSON report in the browser without sending its contents", async 
   page.on("pageerror", (error) =>
     browserDiagnostics.push(error.stack ?? error.message),
   );
+  page.on("request", (request) => {
+    if (request.isNavigationRequest()) {
+      browserDiagnostics.push(
+        `Navigation request: ${request.method()} ${request.url()}`,
+      );
+    }
+  });
   page.on("framenavigated", (frame) => {
     if (frame === page.mainFrame()) {
       browserDiagnostics.push(`Main frame navigated to ${frame.url()}`);
