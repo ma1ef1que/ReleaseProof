@@ -196,12 +196,9 @@ function ReportImporter() {
         )}
         <div className="import-actions">
           <button
-            type="submit"
+            type="button"
             disabled={!selectedFile || isImporting || isLoadingDemo}
-            onClick={(event) => {
-              event.preventDefault();
-              void importSelectedFile();
-            }}
+            onClick={() => void importSelectedFile()}
           >
             Import report
           </button>
