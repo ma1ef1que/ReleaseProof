@@ -7,8 +7,9 @@ not upload report content.
 The implementation has reached **Milestone 6 — Demo readiness**: it includes
 a guided landing page, synthetic demo data, privacy and limitations
 information, keyboard-accessible dialogs, and a GitHub Pages deployment
-workflow that runs after CI passes on `main`. The public deployment and
-external user sessions still require owner setup and coordination.
+workflow that runs after CI passes on `main`. The app is live at
+https://ma1ef1que.github.io/ReleaseProof/. External user sessions still require
+coordination.
 
 ## Requirements
 
@@ -26,9 +27,8 @@ npm run dev
 
 The GitHub Actions workflow runs the quality gates on pull requests and
 deploys a production build to GitHub Pages after a successful push to `main`.
-Enable **Settings → Pages → Build and deployment → GitHub Actions** in the
-repository before the first deployment. The Vite build uses the repository
-subpath automatically.
+GitHub Pages is configured to use **GitHub Actions**. The Vite build uses the
+repository subpath automatically.
 
 ## User testing
 
