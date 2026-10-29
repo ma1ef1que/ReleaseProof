@@ -14,11 +14,6 @@ export function useDialogFocus(
       document.activeElement instanceof HTMLElement
         ? document.activeElement
         : null;
-    const iframeDocuments = new Map<HTMLIFrameElement, Document>();
-    const iframeLoadHandlers = new Map<
-      HTMLIFrameElement,
-      (event: Event) => void
-    >();
     initialFocusRef.current?.focus();
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -38,7 +33,7 @@ export function useDialogFocus(
 
       const focusableElements = Array.from(
         dialog.querySelectorAll<HTMLElement>(
-          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])',
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
         ),
       ).filter(
         (element) =>
@@ -67,49 +62,9 @@ export function useDialogFocus(
       focusableElements[nextIndex]?.focus();
     };
 
-    const attachIframeKeyHandler = (iframe: HTMLIFrameElement) => {
-      const frameDocument = iframe.contentDocument;
-      if (!frameDocument || iframeDocuments.get(iframe) === frameDocument) {
-        return;
-      }
-
-      iframeDocuments
-        .get(iframe)
-        ?.removeEventListener("keydown", handleKeyDown);
-      frameDocument.addEventListener("keydown", handleKeyDown);
-      iframeDocuments.set(iframe, frameDocument);
-    };
-
-    const observeIframe = (iframe: HTMLIFrameElement) => {
-      if (!iframeLoadHandlers.has(iframe)) {
-        const handleLoad = () => attachIframeKeyHandler(iframe);
-        iframe.addEventListener("load", handleLoad);
-        iframeLoadHandlers.set(iframe, handleLoad);
-      }
-      attachIframeKeyHandler(iframe);
-    };
-
-    const dialog = dialogRef.current;
-    dialog?.querySelectorAll("iframe").forEach(observeIframe);
-    const observer = dialog
-      ? new MutationObserver(() => {
-          dialog.querySelectorAll("iframe").forEach(observeIframe);
-        })
-      : null;
-    if (dialog && observer) {
-      observer.observe(dialog, { childList: true, subtree: true });
-    }
-
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
-      observer?.disconnect();
-      iframeLoadHandlers.forEach((handler, iframe) => {
-        iframe.removeEventListener("load", handler);
-      });
-      iframeDocuments.forEach((frameDocument) => {
-        frameDocument.removeEventListener("keydown", handleKeyDown);
-      });
       previouslyFocused?.focus();
     };
   }, [dialogRef, initialFocusRef]);

@@ -346,42 +346,17 @@ test("exports an imported ZIP report as standalone HTML with embedded images", a
   const preview = page.frameLocator(
     'iframe[title="Standalone HTML report preview"]',
   );
-  const previewFrame = page.locator(
-    'iframe[title="Standalone HTML report preview"]',
-  );
   const closePreviewButton = page.getByRole("button", {
     name: "Close preview",
   });
   await expect(closePreviewButton).toBeFocused();
+  await expect(
+    page.getByRole("button", { name: "Print / Save as PDF" }),
+  ).toBeEnabled();
   await page.keyboard.press("Tab");
-  await expect(previewFrame).toBeFocused();
-  await page.keyboard.press("Tab");
-  const printButton = page.getByRole("button", {
-    name: "Print / Save as PDF",
-  });
-  const focusState = await page.evaluate(() => {
-    const frame = document.querySelector<HTMLIFrameElement>(
-      'iframe[title="Standalone HTML report preview"]',
-    );
-    const describe = (element: Element | null | undefined) => {
-      if (!element) {
-        return null;
-      }
-      return {
-        tag: element.tagName,
-        id: element.id,
-        text: element.textContent?.trim().slice(0, 100),
-      };
-    };
-    return {
-      parent: describe(document.activeElement),
-      frame: describe(frame?.contentDocument?.activeElement),
-    };
-  });
-  expect(
-    await printButton.evaluate((element) => document.activeElement === element),
-    JSON.stringify(focusState),
-  ).toBe(true);
+  await expect(
+    page.getByRole("button", { name: "Print / Save as PDF" }),
+  ).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(
     page.getByRole("button", { name: "Download HTML" }),
