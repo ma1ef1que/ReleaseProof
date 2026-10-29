@@ -17,6 +17,15 @@ async function loadReport() {
 test("imports a JSON report in the browser without sending its contents", async ({
   page,
 }) => {
+  const browserErrors: string[] = [];
+  page.on("pageerror", (error) =>
+    browserErrors.push(error.stack ?? error.message),
+  );
+  page.on("console", (message) => {
+    if (message.type() === "error") {
+      browserErrors.push(message.text());
+    }
+  });
   const report = await loadReport();
   const spec = report.suites[0]?.specs?.[0];
   if (!spec) {
@@ -38,9 +47,15 @@ test("imports a JSON report in the browser without sending its contents", async 
   });
   await page.getByRole("button", { name: "Import report" }).click();
 
-  await expect(
-    page.getByRole("heading", { name: "Report ready" }),
-  ).toBeVisible();
+  try {
+    await expect(
+      page.getByRole("heading", { name: "Report ready" }),
+    ).toBeVisible({ timeout: 5_000 });
+  } catch {
+    throw new Error(
+      `Report import did not complete. UI: ${await page.locator("body").innerText()}\nBrowser errors: ${browserErrors.join("\n") || "none"}`,
+    );
+  }
   await expect(page.getByText("4 logical tests and 5 attempts")).toBeVisible();
   await page.getByLabel("Filter by status").selectOption("flaky");
   await expect(
@@ -192,9 +207,32 @@ test("loads clearly labeled synthetic demo data and supports keyboard navigation
   await expect(
     page.getByText("Attachment not included in imported bundle."),
   ).toBeVisible();
-  expect(
-    await page.evaluate(() => document.documentElement.scrollWidth),
-  ).toBeLessThanOrEqual(360);
+  const overflow = await page.evaluate(() => ({
+    width: document.documentElement.scrollWidth,
+    elements: Array.from(document.querySelectorAll<HTMLElement>("body *"))
+      .map((element) => {
+        const bounds = element.getBoundingClientRect();
+        return {
+          tag: element.tagName,
+          id: element.id,
+          className: element.className.toString(),
+          left: Math.round(bounds.left),
+          right: Math.round(bounds.right),
+          width: Math.round(bounds.width),
+          scrollWidth: element.scrollWidth,
+          clientWidth: element.clientWidth,
+        };
+      })
+      .filter(
+        (element) =>
+          element.width > 0 &&
+          (element.left < -1 || element.right > window.innerWidth + 1),
+      )
+      .slice(0, 10),
+  }));
+  expect(overflow.width, JSON.stringify(overflow.elements)).toBeLessThanOrEqual(
+    360,
+  );
 
   const privacyButton = page.getByRole("button", { name: "Privacy" });
   await privacyButton.click();
