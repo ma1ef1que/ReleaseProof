@@ -21,6 +21,16 @@ test("imports a JSON report in the browser without sending its contents", async 
   page.on("pageerror", (error) =>
     browserErrors.push(error.stack ?? error.message),
   );
+  page.on("framenavigated", (frame) => {
+    if (frame === page.mainFrame()) {
+      browserErrors.push(`Main frame navigated to ${frame.url()}`);
+    }
+  });
+  page.on("requestfailed", (request) => {
+    browserErrors.push(
+      `Request failed: ${request.url()} (${request.failure()?.errorText ?? "unknown"})`,
+    );
+  });
   page.on("console", (message) => {
     if (message.type() === "error") {
       browserErrors.push(message.text());
@@ -52,8 +62,20 @@ test("imports a JSON report in the browser without sending its contents", async 
       page.getByRole("heading", { name: "Report ready" }),
     ).toBeVisible({ timeout: 5_000 });
   } catch {
+    const fileState = await page.locator("#report-file").evaluate((element) => {
+      const input = element as HTMLInputElement;
+      return {
+        disabled: input.disabled,
+        value: input.value,
+        files: Array.from(input.files ?? []).map(({ name, size, type }) => ({
+          name,
+          size,
+          type,
+        })),
+      };
+    });
     throw new Error(
-      `Report import did not complete. UI: ${await page.locator("body").innerText()}\nBrowser errors: ${browserErrors.join("\n") || "none"}`,
+      `Report import did not complete. URL: ${page.url()}\nFile input: ${JSON.stringify(fileState)}\nImport button disabled: ${await page.getByRole("button", { name: "Import report" }).isDisabled()}\nUI: ${await page.locator("body").innerText()}\nBrowser diagnostics: ${browserErrors.join("\n") || "none"}`,
     );
   }
   await expect(page.getByText("4 logical tests and 5 attempts")).toBeVisible();
